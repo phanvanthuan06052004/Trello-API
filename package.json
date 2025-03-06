@@ -1,9 +1,9 @@
 {
-  "name": "trello-Api",
+  "name": "trello-app",
   "private": true,
   "version": "1.0.0",
-  "author": "PhanVanThuan",
-  "description": "praticre code",
+  "author": "Phan Van Thuan",
+  "description": "phan Van Thuan",
   "engines": {
     "node": ">=18.x"
   },
@@ -17,7 +17,10 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.22.10",
-    "express": "^4.18.2"
+    "async-exit-hook": "^2.0.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.18.2",
+    "mongodb": "^6.14.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.22.10",
