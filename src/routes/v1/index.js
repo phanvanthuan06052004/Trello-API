@@ -1,5 +1,10 @@
-/**
- * Updated by trungquandev.com's author on August 17 2023
- * YouTube: https://youtube.com/@trungquandev
- * "A bit of fragrance clings to the hand that gives flowers!"
- */
+import { StatusCodes } from 'http-status-codes'
+import express from 'express'
+import { BoardRoutes } from './boardRoutes'
+const Router = express.Router()
+
+// BoardsAPIs
+Router.use('/boards', BoardRoutes)
+
+export const APIs_V1 = Router
+

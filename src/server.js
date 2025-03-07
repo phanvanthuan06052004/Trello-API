@@ -3,12 +3,15 @@ import express from 'express'
 // eslint-disable-next-line no-unused-vars
 import { CONNECT_DB, GET_DB, CLOSE_DB } from '~/config/mongodb'
 import exitHook from 'async-exit-hook'
+import { APIs_V1 } from './routes/v1'
 
 const START_SERVER = () => {
   const app = express()
 
   const hostname = 'localhost'
   const port = 8017
+
+  app.use('/v1', APIs_V1)
 
   app.get('/', async (req, res) => {
   // Test Absolute import mapOrder
