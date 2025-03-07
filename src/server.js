@@ -11,6 +11,8 @@ const START_SERVER = () => {
   const hostname = 'localhost'
   const port = 8017
 
+  app.use(express.json())
+
   app.use('/v1', APIs_V1)
 
   app.get('/', async (req, res) => {
