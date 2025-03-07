@@ -1,5 +1,4 @@
 import { StatusCodes } from 'http-status-codes'
-import express from 'express'
 import Joi from 'joi'
 
 const createNew = async (req, res, next) => {
@@ -27,7 +26,7 @@ const createNew = async (req, res, next) => {
     // console.log(req.body)
     // abortEarly: false là để liệt kê ra tất cả các lỗi khi có error
     await correctcondition.validateAsync(req.body, { abortEarly: false })
-    res.status(StatusCodes.CREATED).json({ massage: 'Create New board success'})
+    next() // chuyển tiếp đến bước xử lí tiếp theo
   } catch (error) {
     console.log(error)
     res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ error: new Error(error).message})
