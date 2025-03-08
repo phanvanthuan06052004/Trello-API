@@ -6,8 +6,9 @@ const createNew = async (req, res, next) => {
 
     res.status(StatusCodes.CREATED).json({ massage: 'Create New board success'})
   } catch (error) {
-    console.log(error)
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ errors: error.message})
+    // console.log(error)
+    // res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ errors: error.message})
+    next(error)
   }
 }
 
