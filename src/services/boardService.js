@@ -11,7 +11,7 @@ const createNew = async ( reqBody ) => {
     const result = await boardModel.createNew(newBoard)
 
 
-    return await boardModel.findOneById(result.insertedId)
+    return await boardModel.findOneById(result.insertedId.toString())
 
     // return newBoard // phải nhớ return chớ ko nó bắn req liên tục
   }
