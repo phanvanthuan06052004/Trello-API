@@ -15,15 +15,8 @@ const START_SERVER = () => {
   // Enabel req body data
   app.use(express.json())
 
-  
-
   app.use('/v1', APIs_V1)
 
-  app.get('/', async (req, res) => {
-  // Test Absolute import mapOrder
-    console.log(await GET_DB().listCollections().toArray())
-    res.end('<h1>Hello World!</h1><hr>')
-  })
 
   // Middleware xử lí lỗi tập trung
   app.use(errorHandlingMiddleware)
