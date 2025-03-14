@@ -2,6 +2,7 @@ import { slugify } from '~/utils/formatters'
 import { boardModel } from '~/models/boardModel'
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
+import { cloneDeep } from 'lodash'
 const createNew = async ( reqBody ) => {
   // eslint-disable-next-line no-useless-catch
   try {
@@ -29,7 +30,16 @@ const getDetails = async ( id ) => {
     if (!result) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'board not found!')
     }
-    return result
+    const resBoard = cloneDeep(result) // Sao chép và tách rời cái củ
+    // Format data
+    resBoard.columns.forEach( column => {
+      // equals này là mongoDb có hỗ trọ
+      column.cards = resBoard.cards.filter(card => card.columnId.equals(column._id)) // Nếu dùng 3 = thì nhớ toString() bởi vì Id là objectId
+    })
+
+    // xóa card dư 
+    delete resBoard.cards
+    return resBoard
   }
   catch (error) {
     throw error
