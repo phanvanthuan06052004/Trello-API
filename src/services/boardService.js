@@ -4,7 +4,6 @@ import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep } from 'lodash'
 const createNew = async ( reqBody ) => {
-  // eslint-disable-next-line no-useless-catch
   try {
     const newBoard = {
       ...reqBody,
@@ -45,7 +44,22 @@ const getDetails = async ( id ) => {
     throw error
   }
 }
+
+const update = async ( id, data ) => {
+  try {
+    const newBoard = {
+      ...data,
+      updatedAt: Date.now()
+    }
+
+    return await boardModel.update(id, newBoard)
+  }
+  catch (error) {
+    throw error
+  }
+}
 export const boardService = {
   createNew,
-  getDetails
+  getDetails,
+  update
 }

@@ -11,7 +11,7 @@ const createNew = async ( reqBody ) => {
       // thêm json chứa list card trong column đồng bộ cho FE
       getNewColumn.cards = []
 
-      boardModel.pushColumnIdToIds(getNewColumn)
+      await boardModel.pushColumnIdToIds(getNewColumn)
     }
     return getNewColumn
   }
