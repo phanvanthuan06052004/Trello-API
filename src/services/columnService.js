@@ -1,5 +1,6 @@
 import { columnModel } from '~/models/columnModel'
 import { boardModel } from '~/models/boardModel'
+import { ObjectId } from 'mongodb'
 const createNew = async ( reqBody ) => {
   try {
     const newColumn = {
@@ -20,7 +21,21 @@ const createNew = async ( reqBody ) => {
   }
 }
 
+const update = async ( id, data ) => {
+  try {
+    const newColumn = {
+      ...data,
+      updatedAt: Date.now()
+    }
+
+    return await columnModel.update(id, newColumn)
+  }
+  catch (error) {
+    throw error
+  }
+}
 
 export const columnService = {
-  createNew
+  createNew,
+  update
 }

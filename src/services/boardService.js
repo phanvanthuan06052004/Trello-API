@@ -2,7 +2,11 @@ import { slugify } from '~/utils/formatters'
 import { boardModel } from '~/models/boardModel'
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
-import { cloneDeep } from 'lodash'
+import { cloneDeep, result } from 'lodash'
+import { columnModel } from '~/models/columnModel'
+import { cardModel } from '~/models/cardModel'
+import { ObjectId } from 'mongodb'
+
 const createNew = async ( reqBody ) => {
   try {
     const newBoard = {
@@ -58,8 +62,36 @@ const update = async ( id, data ) => {
     throw error
   }
 }
+
+const moveCarDifferenceColumn = async ( data ) => {
+  try {
+
+    // update cardOrderedIds của column củ
+    await columnModel.update(data.prevColumnId, {
+      cardOrderIds: data.prevCardOrderedIds,
+      updatedAt: Date.now()
+    })
+    // update cardOrderedIds của column mới
+    await columnModel.update(data.nextColumnId, {
+      cardOrderIds: data.nextCardOrderedIds,
+      updatedAt: Date.now()
+    })
+
+    // update lại columnId của card vừa mới kéo
+    await cardModel.update(data.dragCardId, {
+      columnId: data.nextColumnId
+    })
+
+    return { result: 'successfully!' }
+  }
+  catch (error) {
+    throw error
+  }
+}
+
 export const boardService = {
   createNew,
   getDetails,
-  update
+  update,
+  moveCarDifferenceColumn
 }
