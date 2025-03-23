@@ -19,6 +19,9 @@ const COLUMN_COLLECTION_SCHEMA = Joi.object({
   _destroy: Joi.boolean().default(false)
 })
 
+// chỉ định những trường ko nên update
+const INVALID_DATA_UPDATE = ['_id', 'createdAt']
+
 const validationBeforeCreae = async (data) => {
   return await COLUMN_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
@@ -59,10 +62,37 @@ const pushCardIdToIds = async (card) => {
   }
 }
 
+
+const update = async (id, data) => {
+  try {
+    Object.keys(data).forEach(key => {
+      if (INVALID_DATA_UPDATE.includes(key)) {
+        delete data[key]
+      }
+    })
+
+    // kiểm tra object ID
+    if (data.cardOrderIds) {
+      data.cardOrderIds = data.cardOrderIds.map(_id => (new ObjectId(_id)))
+    }
+
+    const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: data },
+      { returnDocument: 'after' }
+    )
+
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const columnModel = {
   COLUMN_COLLECTION_NAME,
   COLUMN_COLLECTION_SCHEMA,
   createNew,
   findOneById,
-  pushCardIdToIds
+  pushCardIdToIds,
+  update
 }

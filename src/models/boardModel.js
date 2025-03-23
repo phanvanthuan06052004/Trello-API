@@ -24,7 +24,9 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   _destroy: Joi.boolean().default(false)
 })
 
+// chỉ định những trường ko nên update
 const INVALID_DATA_UPDATE = ['_id', 'createdAt']
+
 const validationBeforeCreae = async (data) => {
   return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
@@ -98,6 +100,11 @@ const update = async (id, data) => {
       }
     })
 
+    // kiểm tra object ID
+    if (data.columnOrderIds) {
+      data.columnOrderIds = data.columnOrderIds.map(_id => (new ObjectId(_id)))
+    }
+
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(id) },
       { $set: data },
@@ -109,6 +116,7 @@ const update = async (id, data) => {
     throw new Error(error)
   }
 }
+
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,

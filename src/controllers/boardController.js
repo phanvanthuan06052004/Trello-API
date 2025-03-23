@@ -37,8 +37,20 @@ const update = async (req, res, next) => {
   }
 }
 
+const moveCarDifferenceColumn = async (req, res, next) => {
+
+  try {
+    const data = req.body
+    const result = await boardService.moveCarDifferenceColumn(data)
+    res.status(StatusCodes.OK).json(result)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const boardController = {
   createNew,
   getDetails,
-  update
+  update,
+  moveCarDifferenceColumn
 }
