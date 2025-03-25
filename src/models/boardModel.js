@@ -86,7 +86,20 @@ const pushColumnIdToIds = async (column) => {
       { returnDocument: 'after' }
     )
 
-    return result.value
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const pullColumnIdToIds = async (column) => {
+  try {
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(column.boardId) },
+      { $pull: { columnOrderIds: new ObjectId(column._id) } }, // pull: xóa ID đó ra khỏi mảng
+      { returnDocument: 'after' }
+    )
+    return result
   } catch (error) {
     throw new Error(error)
   }
@@ -104,13 +117,11 @@ const update = async (id, data) => {
     if (data.columnOrderIds) {
       data.columnOrderIds = data.columnOrderIds.map(_id => (new ObjectId(_id)))
     }
-
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(id) },
       { $set: data },
       { returnDocument: 'after' }
     )
-
     return result
   } catch (error) {
     throw new Error(error)
@@ -124,5 +135,6 @@ export const boardModel = {
   findOneById,
   getDetails,
   pushColumnIdToIds,
+  pullColumnIdToIds,
   update
 }

@@ -76,7 +76,6 @@ const moveCarDifferenceColumn = async ( data ) => {
       cardOrderIds: data.nextCardOrderedIds,
       updatedAt: Date.now()
     })
-
     // update lại columnId của card vừa mới kéo
     await cardModel.update(data.dragCardId, {
       columnId: data.nextColumnId
