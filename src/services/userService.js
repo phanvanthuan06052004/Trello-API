@@ -84,9 +84,26 @@ const login = async ( reqBody ) => {
   }
 }
 
+const refreshToken = async (token) => {
+  try {
+    // Giải mã token check hợp lệ hay không
+    const refreshTokenDecoded = await JwtProvider.verifyToken(token, env.REFRESH_TOKEN_SECRET_KEY)
+
+    const userInfo = {
+      _id: refreshTokenDecoded._id,
+      email: refreshTokenDecoded.email
+    }
+
+    const accessToken = JwtProvider.generateToken(userInfo, env.ACCESS_TOKEN_SECRET_KEY, env.ACCESS_TOKEN_LIFETIME)
+    return { accessToken }
+  } catch (error) {
+    throw error
+  }
+}
 
 export const userService = {
   createNew,
   verify,
-  login
+  login,
+  refreshToken
 }
