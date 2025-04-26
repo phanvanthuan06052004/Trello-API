@@ -68,7 +68,7 @@ const login = async ( reqBody ) => {
     const checkEmail = await userModel.findOneByEmail(reqBody.email)
     if (!checkEmail) throw new ApiError(StatusCodes.NOT_FOUND, 'Email not found!')
     if (!checkEmail.isActive) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Email is not verified!')
-    if (!bcryptjs.compareSync(reqBody.password, checkEmail.password)) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Password is not correct!')
+    if (!bcryptjs.compareSync(reqBody.password, checkEmail.password)) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Password or email is not correct!')
     // tạo access token và refresh token
     const userInfo = { _id: checkEmail._id, email: checkEmail.email }
 

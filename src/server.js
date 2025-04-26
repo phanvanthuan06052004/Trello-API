@@ -8,13 +8,21 @@ import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'
 import cors from 'cors'
 import { env } from '~/config/environment'
 import { corsOptions } from './config/cors'
-
+import cookieParser from 'cookie-parser'
 const START_SERVER = () => {
   const app = express()
 
   const hostname = env.APP_HOST
   const port = env.APP_PORT
 
+  // Fix Cache from disk của ExpressJS
+  app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store')
+    next()
+  })
+
+  // Cấu hình cookieParser
+  app.use(cookieParser())
 
   app.use(cors(corsOptions))
   // Enabel req body data
