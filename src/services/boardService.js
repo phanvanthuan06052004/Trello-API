@@ -6,7 +6,7 @@ import { cloneDeep, result } from 'lodash'
 import { columnModel } from '~/models/columnModel'
 import { cardModel } from '~/models/cardModel'
 import { ObjectId } from 'mongodb'
-
+import { DEFAULT_PAGE, DEFAULT_ITEMS_PER_PAGE } from '~/utils/constants'
 const createNew = async ( reqBody ) => {
   try {
     const newBoard = {
@@ -88,9 +88,23 @@ const moveCarDifferenceColumn = async ( data ) => {
   }
 }
 
+const getAll = async ( userId, page, itemsPerPage ) => {
+  try {
+    if (!page) page = DEFAULT_PAGE || 1
+    if (!itemsPerPage) itemsPerPage = DEFAULT_ITEMS_PER_PAGE || 12
+    
+    const result = await boardModel.getAll(userId, parseInt(page, 10), itemsPerPage)
+    return result
+  }
+  catch (error) {
+    throw error
+  }
+}
+
 export const boardService = {
   createNew,
   getDetails,
   update,
-  moveCarDifferenceColumn
+  moveCarDifferenceColumn,
+  getAll
 }
