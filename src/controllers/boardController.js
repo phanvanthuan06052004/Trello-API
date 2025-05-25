@@ -48,9 +48,23 @@ const moveCarDifferenceColumn = async (req, res, next) => {
   }
 }
 
+
+const getAll = async (req, res, next) => {
+
+  try {
+    const userId = req.jwtDecoded._id
+    const { page, itemsPerPage } = req.query
+    const result = await boardService.getAll(userId, page, itemsPerPage)
+    res.status(StatusCodes.OK).json(result)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const boardController = {
   createNew,
   getDetails,
   update,
-  moveCarDifferenceColumn
+  moveCarDifferenceColumn,
+  getAll
 }

@@ -6,6 +6,7 @@ import { GET_DB } from '~/config/mongodb'
 import { BOARD_TYPE } from '~/utils/constants'
 import { columnModel } from './columnModel'
 import { cardModel } from './cardModel'
+import { pagingSkipValue } from '~/utils/algorithms'
 
 // Define Collection (name & schema)
 const BOARD_COLLECTION_NAME = 'Boards'
@@ -16,6 +17,16 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   type: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE).required(),
   // Lưu ý các item trong mảng columnOrderIds là ObjectId nên cần thêm pattern cho chuẩn nhé, (lúc quay video số 57 mình quên nhưng sang đầu video số 58 sẽ có nhắc lại về cái này.)
   columnOrderIds: Joi.array().items(
+    Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
+  ).default([]),
+
+  // ownerIds là những người tạo ra board này
+  ownerIds: Joi.array().items(
+    Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
+  ).default([]),
+
+  // memberIds là những người được mời vào board này
+  memberIds: Joi.array().items(
     Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
   ).default([]),
 
@@ -128,6 +139,49 @@ const update = async (id, data) => {
   }
 }
 
+
+const getAll = async (userId, page, itemsPerPage) => {
+  try {
+    const queryCondition = [
+      { _destroy: false }, // chỉ lấy những board chưa bị xóa
+      { $or: [
+        { ownerIds: { $all: [new ObjectId(userId)] } }, // ownerIds là người tạo ra board
+        { memberIds: { $all: [new ObjectId(userId)] } } // memberIds là người được mời vào board
+      ] }
+    ]
+
+    const query = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate([
+      { $match: { $and: queryCondition } }, // Điều kiện để lấy board
+      { $sort: { title: 1 } }, // Sắp xếp theo title theo mã ASCii B > a
+
+      // xử lý đa luồng
+      { $facet: {
+        // luồng 01: Qery board
+        'queryBoard': [
+          { $skip: pagingSkipValue(page, itemsPerPage) }, // Bỏ qua những board đã lấy
+          { $limit: itemsPerPage } // Giới hạn số lượng board trả về
+        ],
+        // luồng 02: Count board
+        'queryTotalBoard': [
+          { $count: 'totalBoard' } // Đếm tổng số board
+        ]
+      }
+      }
+    ],
+    // fix vụ B hoa và a thường sắp xếp không đúng
+    { collation: { locale: 'en' } }
+    ).toArray()
+
+    const res = query[0] // Lấy luồng đầu tiên
+
+    return {
+      boards: res.queryBoard || 0,
+      totalBoards: res.queryTotalBoard.length > 0 ? res.queryTotalBoard[0].totalBoard : 0
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
@@ -136,5 +190,6 @@ export const boardModel = {
   getDetails,
   pushColumnIdToIds,
   pullColumnIdToIds,
-  update
+  update,
+  getAll
 }
