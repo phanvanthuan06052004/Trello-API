@@ -8,6 +8,7 @@ import { WEBSITE_DOMAIN } from '~/utils/constants'
 import { BrevoProvider } from '~/providers/BrevoProvider'
 import { JwtProvider } from '~/providers/JwtProvider'
 import { env } from '~/config/environment'
+import { CloudinaryProvider } from '~/providers/CloudinaryProvider'
 const createNew = async ( reqBody ) => {
   try {
     // check email có tồn tại hay không
@@ -101,34 +102,37 @@ const refreshToken = async (token) => {
   }
 }
 
-const update = async ( userId, reqBody ) => {
+const update = async ( userId, reqBody, fileAvatar ) => {
   try {
     const exitedUser = await userModel.findOneById(userId)
     if (!exitedUser) throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found to update!')
     if(!exitedUser.isActive) throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your account is not verified!')
 
-    let newData = {}
+    let updatedUser = {}
 
     // trường hợp đổi mật khẩu
-    if(reqBody.current_password && reqBody.new_password) {
+    if (reqBody.current_password && reqBody.new_password) {
       if (!bcryptjs.compareSync(reqBody.current_password, exitedUser.password)) {
         throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Current password is not correct!')
       }
-      newData = {
+      updatedUser = await userModel.update(userId, {
         password: bcryptjs.hashSync(reqBody.new_password, 8)
+      })
+      return pickUser(updatedUser)
+    } else if (fileAvatar) {
+      // trường hợp update avatar
+      const cloudinaryResult = await CloudinaryProvider.streamUpload(fileAvatar.buffer, 'avatars')
+      const newData = {
+        avatar: cloudinaryResult.secure_url
       }
-      const result = await userModel.update(userId, newData)
-      return pickUser(result)
+      updatedUser = await userModel.update(userId, newData)
+    } else {
+      updatedUser = await userModel.update(userId, {
+        displayname: reqBody.displayName
+      })
     }
 
-    // trường hợp update thông tin khác
-    if (reqBody.displayName) {
-      newData = {
-        displayname: reqBody.displayName
-      }
-      const result = await userModel.update(userId, newData)
-      return pickUser(result)
-    }
+    return pickUser(updatedUser)
   }
   catch (error) {
     throw error
