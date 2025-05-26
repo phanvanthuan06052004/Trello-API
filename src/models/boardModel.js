@@ -38,14 +38,18 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
 // chỉ định những trường ko nên update
 const INVALID_DATA_UPDATE = ['_id', 'createdAt']
 
-const validationBeforeCreae = async (data) => {
+const validationBeforeCreate = async (data) => {
   return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
 
-const createNew = async (data) => {
+const createNew = async (userId, data) => {
   try {
-    const validation = await validationBeforeCreae(data)
-    return await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(validation)
+    const validation = await validationBeforeCreate(data)
+    const newData = {
+      ...validation,
+      ownerIds: [new ObjectId(userId)]
+    }
+    return await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(newData)
   } catch (error) {
     throw new Error(error)
   }
@@ -62,13 +66,19 @@ const findOneById = async(id) => {
 }
 
 // Aggregate: câu queery tổng hợp join các bản lại với nhau
-const getDetails = async(id) => {
+const getDetails = async(userId, boardId) => {
   try {
+    const queryCondition = [
+      { _id: new ObjectId(boardId) }, // tìm board theo ID
+      { _destroy: false }, // chỉ lấy những board chưa bị xóa
+      { $or: [
+        { ownerIds: { $all: [new ObjectId(userId)] } }, // ownerIds là người tạo ra board
+        { memberIds: { $all: [new ObjectId(userId)] } } // memberIds là người được mời vào board
+      ] }
+    ]
+
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate([
-      { $match: { // Điều kiện đúng để thực hiện
-        _id: new ObjectId(id),
-        _destroy: false
-      } },
+      { $match: { $and: queryCondition } },
       { $lookup: {
         from: columnModel.COLUMN_COLLECTION_NAME,
         localField: '_id',
