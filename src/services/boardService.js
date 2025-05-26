@@ -7,14 +7,14 @@ import { columnModel } from '~/models/columnModel'
 import { cardModel } from '~/models/cardModel'
 import { ObjectId } from 'mongodb'
 import { DEFAULT_PAGE, DEFAULT_ITEMS_PER_PAGE } from '~/utils/constants'
-const createNew = async ( reqBody ) => {
+const createNew = async ( userId, reqBody ) => {
   try {
     const newBoard = {
       ...reqBody,
       slug: slugify(reqBody.title)
     }
 
-    const result = await boardModel.createNew(newBoard)
+    const result = await boardModel.createNew(userId, newBoard)
 
 
     return await boardModel.findOneById(result.insertedId)
@@ -26,10 +26,10 @@ const createNew = async ( reqBody ) => {
   }
 }
 
-const getDetails = async ( id ) => {
+const getDetails = async ( userId, boardId ) => {
   // eslint-disable-next-line no-useless-catch
   try {
-    const result = await boardModel.getDetails(id)
+    const result = await boardModel.getDetails(userId, boardId)
     if (!result) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'board not found!')
     }
