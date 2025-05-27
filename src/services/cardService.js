@@ -1,5 +1,6 @@
 import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
+import { CloudinaryProvider } from '~/providers/CloudinaryProvider'
 const createNew = async ( reqBody ) => {
   try {
     const newCard = {
@@ -17,13 +18,23 @@ const createNew = async ( reqBody ) => {
   }
 }
 
-const updateCard = async ( cardId, reqBody ) => {
+const updateCard = async ( cardId, reqBody, uploadedFile ) => {
   try {
     const updateData = {
       ...reqBody,
       updatedAt: Date.now()
     }
-    const result = await cardModel.update(cardId, updateData)
+    let result = {}
+    if (uploadedFile) {
+      const cloudinaryResult = await CloudinaryProvider.streamUpload(uploadedFile.buffer, 'cards-cover')
+      const newData = {
+        cover: cloudinaryResult.secure_url,
+        updatedAt: Date.now()
+      }
+      result = await cardModel.update(cardId, newData)
+    } else {
+      result = await cardModel.update(cardId, updateData)
+    }
 
     return result
   }

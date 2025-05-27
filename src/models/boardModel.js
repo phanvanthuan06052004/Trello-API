@@ -1,12 +1,13 @@
 
 import Joi from 'joi'
-import { ObjectId, ReturnDocument } from 'mongodb'
+import { ObjectId } from 'mongodb'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { GET_DB } from '~/config/mongodb'
 import { BOARD_TYPE } from '~/utils/constants'
 import { columnModel } from './columnModel'
 import { cardModel } from './cardModel'
 import { pagingSkipValue } from '~/utils/algorithms'
+import { userModel } from './userModel'
 
 // Define Collection (name & schema)
 const BOARD_COLLECTION_NAME = 'Boards'
@@ -90,8 +91,26 @@ const getDetails = async(userId, boardId) => {
         localField: '_id',
         foreignField: 'boardId',
         as: 'cards'
-      }
-      }]).toArray()
+      } },
+      { $lookup: {
+        from: userModel.USER_COLLECTION_NAME,
+        localField: 'ownerIds',
+        foreignField: '_id',
+        as: 'owners',
+        // pipeline trong lookup để xử lý 1 hoặc nhiều luồng
+        // project để chỉ lấy những trường cần thiết
+        pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }] // không trả về password, verifyToken
+      } },
+      { $lookup: {
+        from: userModel.USER_COLLECTION_NAME,
+        localField: 'memberIds',
+        foreignField: '_id',
+        as: 'members',
+        // pipeline trong lookup để xử lý 1 hoặc nhiều luồng
+        // project để chỉ lấy những trường cần thiết
+        pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }] // không trả về password, verifyToken
+      } }
+    ]).toArray()
 
     return result[0] || null
   } catch (error) {
