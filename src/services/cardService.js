@@ -18,7 +18,7 @@ const createNew = async ( reqBody ) => {
   }
 }
 
-const updateCard = async ( cardId, reqBody, uploadedFile ) => {
+const updateCard = async ( cardId, reqBody, uploadedFile, userInfor ) => {
   try {
     const updateData = {
       ...reqBody,
@@ -32,6 +32,14 @@ const updateCard = async ( cardId, reqBody, uploadedFile ) => {
         updatedAt: Date.now()
       }
       result = await cardModel.update(cardId, newData)
+    } else if (reqBody.comment) {
+      const newComment = {
+        ...reqBody.comment,
+        userId: userInfor._id,
+        userEmail: userInfor.email,
+        commentedAt: Date.now()
+      }
+      result = await cardModel.unShiftNewComment(cardId, newComment)
     } else {
       result = await cardModel.update(cardId, updateData)
     }

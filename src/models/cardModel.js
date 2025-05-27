@@ -83,6 +83,23 @@ const update = async (id, data) => {
   }
 }
 
+// đưa comment mới vào đầu mảng comments
+// bọc data vào array để trong each chỉ định vị trí đầu tiên
+const unShiftNewComment = async (cardId, data) => {
+  try {
+    const result = await GET_DB().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(cardId) },
+      { $push: { comments: { $each: [data], $position: 0 } } },
+      { returnDocument: 'after' }
+    )
+
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+
 const deleteManyCardByColumnId = async ( id ) => {
   try {
     const result = await GET_DB().collection(CARD_COLLECTION_NAME).deleteMany({ columnId: new ObjectId(id) })
@@ -98,5 +115,6 @@ export const cardModel = {
   createNew,
   findOneById,
   update,
-  deleteManyCardByColumnId
+  deleteManyCardByColumnId,
+  unShiftNewComment
 }
