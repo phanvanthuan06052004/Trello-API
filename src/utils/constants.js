@@ -25,3 +25,8 @@ export const BOARD_INVITATION_STATUS = {
   ACCEPTED: 'ACCEPTED',
   REJECTED: 'REJECTED'
 }
+
+export const CARD_ACTION = {
+  ADD: 'ADD',
+  REMOVE: 'REMOVE'
+}

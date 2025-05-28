@@ -11,6 +11,7 @@ import { corsOptions } from './config/cors'
 import cookieParser from 'cookie-parser'
 import socketIo from 'socket.io'
 import http from 'http'
+import { inviteSocket } from './sockets/inviteSocket'
 const START_SERVER = () => {
   const app = express()
 
@@ -43,11 +44,7 @@ const START_SERVER = () => {
   // Khởi tạo socket.io
   // Lắng nghe sự kiện kết nối từ client
   io.on('connection', (socket) => {
-    // lăng nghe sự kiện từ client
-    socket.on('FE_USER_INVITE_TO_BOARD', (invitation) => {
-      // Khi có người dùng khác mời vào board thì sẽ bắn sự kiện này tơi tất cả người dùng đang online
-      socket.broadcast.emit('BE_USER_INVITE_TO_BOARD', invitation)
-    })
+    inviteSocket(socket)
   })
   if (env.BUILD_MODE === 'production' ) {
     server.listen(port, () => {

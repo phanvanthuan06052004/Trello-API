@@ -14,5 +14,6 @@ Router.route('/:id')
     multerUploadMiddleware.upload.single('cardCover'),
     cardValidation.updateCard,
     cardController.updateCard)
+
 export const CardRoutes = Router
 
