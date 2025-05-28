@@ -5,6 +5,7 @@ import { pickUser } from '~/utils/formatters'
 import { BOARD_INVITATION_STATUS, INVITATION_TYPE } from '~/utils/constants'
 import { boardModel } from '~/models/boardModel'
 import { invitationModel } from '~/models/invitationModel'
+import { get } from 'lodash'
 
 const createNew = async ( reqBody, inviterId ) => {
   try {
@@ -45,6 +46,24 @@ const createNew = async ( reqBody, inviterId ) => {
   }
 }
 
+const getInvitations = async ( userId ) => {
+  try {
+    const invitations = await invitationModel.findInvitationsByUserId(userId)
+
+    const response = invitations.map(invitation => ({
+      ...invitation,
+      inviter: invitation.inviter[0],
+      invitee: invitation.invitee[0],
+      board: invitation.board[0]
+    }))
+    return response
+  }
+  catch (error) {
+    throw error
+  }
+}
+
 export const invitationService = {
-  createNew
+  createNew,
+  getInvitations
 }
