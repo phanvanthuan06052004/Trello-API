@@ -9,6 +9,9 @@ import cors from 'cors'
 import { env } from '~/config/environment'
 import { corsOptions } from './config/cors'
 import cookieParser from 'cookie-parser'
+import socketIo from 'socket.io'
+import http from 'http'
+import { inviteSocket } from './sockets/inviteSocket'
 const START_SERVER = () => {
   const app = express()
 
@@ -33,11 +36,27 @@ const START_SERVER = () => {
 
   // Middleware xử lí lỗi tập trung
   app.use(errorHandlingMiddleware)
+  // khởi tạo server mới để bọc app của express hỗ trợ real-time socket
+  const server = http.createServer(app)
 
-  app.listen(port, hostname, () => {
-  // eslint-disable-next-line no-console
-    console.log(`Hello Thuan, I am running at ${ hostname }:${ port }/`)
+  // Khởi tạo biến io với server và cấu hình CORS
+  const io = socketIo(server, { cors: corsOptions })
+  // Khởi tạo socket.io
+  // Lắng nghe sự kiện kết nối từ client
+  io.on('connection', (socket) => {
+    inviteSocket(socket)
   })
+  if (env.BUILD_MODE === 'production' ) {
+    server.listen(port, () => {
+      // eslint-disable-next-line no-console
+      console.log(`Hello Thuan, I am running at ${ hostname }:${ port }/`)
+    })
+  } else {
+    server.listen(port, hostname, () => {
+      // eslint-disable-next-line no-console
+      console.log(`Hello Thuan, I am running at ${ hostname }:${ port }/`)
+    })
+  }
 
   // Clean connect
   exitHook(() => { // BẮT SỰ KIÊN CTR C

@@ -3,6 +3,8 @@ import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
 import { BOARD_INVITATION_STATUS, INVITATION_TYPE } from '~/utils/constants'
 import { EMAIL_RULE, EMAIL_RULE_MESSAGE, OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
+import { userModel } from './userModel'
+import { boardModel } from './boardModel'
 
 // Define Collection (name & schema)
 const INVITATION_COLLECTION_NAME = 'Invitations'
@@ -88,11 +90,50 @@ const update = async (id, data) => {
   }
 }
 
+const findInvitationsByUserId = async(userId) => {
+  try {
+    const queryCondition = [
+      { inviteeId: new ObjectId(userId) },
+      { _destroy: false } // chỉ lấy những board chưa bị xóa
+    ]
+    const result = await GET_DB().collection(INVITATION_COLLECTION_NAME).aggregate([
+      { $match: { $and: queryCondition } },
+      { $lookup: {
+        from: userModel.USER_COLLECTION_NAME,
+        localField: 'inviteeId',
+        foreignField: '_id',
+        as: 'invitee',
+        // pipeline trong lookup để xử lý 1 hoặc nhiều luồng
+        // project để chỉ lấy những trường cần thiết
+        pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }] // không trả về password, verifyToken
+      } },
+      { $lookup: {
+        from: userModel.USER_COLLECTION_NAME,
+        localField: 'inviterId',
+        foreignField: '_id',
+        as: 'inviter',
+        // pipeline trong lookup để xử lý 1 hoặc nhiều luồng
+        // project để chỉ lấy những trường cần thiết
+        pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }] // không trả về password, verifyToken
+      } },
+      { $lookup: {
+        from: boardModel.BOARD_COLLECTION_NAME,
+        localField: 'boardInvitation.boardId',
+        foreignField: '_id',
+        as: 'board'
+      } }
+    ]).toArray()
 
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 export const invitationModel = {
   INVITATION_COLLECTION_NAME,
   INVITATION_COLLECTION_SCHEMA,
   createInvitation,
   findOneById,
-  update
+  update,
+  findInvitationsByUserId
 }
