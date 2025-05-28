@@ -88,12 +88,12 @@ const moveCarDifferenceColumn = async ( data ) => {
   }
 }
 
-const getAll = async ( userId, page, itemsPerPage ) => {
+const getAll = async ( userId, page, itemsPerPage, filter ) => {
   try {
     if (!page) page = DEFAULT_PAGE || 1
     if (!itemsPerPage) itemsPerPage = DEFAULT_ITEMS_PER_PAGE || 12
     
-    const result = await boardModel.getAll(userId, parseInt(page, 10), itemsPerPage)
+    const result = await boardModel.getAll(userId, parseInt(page, 10), itemsPerPage, filter)
     return result
   }
   catch (error) {

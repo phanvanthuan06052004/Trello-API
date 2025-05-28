@@ -172,7 +172,7 @@ const update = async (id, data) => {
 }
 
 
-const getAll = async (userId, page, itemsPerPage) => {
+const getAll = async (userId, page, itemsPerPage, filter) => {
   try {
     const queryCondition = [
       { _destroy: false }, // chỉ lấy những board chưa bị xóa
@@ -181,6 +181,14 @@ const getAll = async (userId, page, itemsPerPage) => {
         { memberIds: { $all: [new ObjectId(userId)] } } // memberIds là người được mời vào board
       ] }
     ]
+
+    if (filter) {
+      Object.keys(filter).forEach(key => {
+        queryCondition.push({
+          [key]: { $regex: filter[key], $options: 'i' } // i là không phân biệt hoa thường)
+        })
+      })
+    }
 
     const query = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate([
       { $match: { $and: queryCondition } }, // Điều kiện để lấy board
